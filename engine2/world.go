@@ -19,6 +19,7 @@ type World struct {
 func NewWorld() *World {
 	level := NewLevel()
 	level.AddPlayer(NewPosition(600, 600), NewColor(0.1, 0.4, 0.3, 0.9), GRAVITY, BALL_RADIUS, MOVESPEED)
+	level.SpawnEnemy()
 	return &World{
 		Level: level,
 	}

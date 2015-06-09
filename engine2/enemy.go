@@ -4,7 +4,7 @@ import (
 	"github.com/go-gl/gl/v2.1/gl"
 )
 
-type Player struct {
+type Enemy struct {
 	rotation  float32
 	position  Position
 	color     Color
@@ -13,32 +13,30 @@ type Player struct {
 	velocity_x float32
 	velocity_y float32
 
-	gravity    float32
 	move_speed float32
 	radius     float32
 }
 
-func NewPlayer(pos Position, color Color, gravity, radius, move_speed float32) *Player {
+func NewEnemy(pos Position, color Color, radius, move_speed float32) *Enemy {
 	direction := NewDirection()
 
 	// direction.MoveEast()
 
-	return &Player{
+	return &Enemy{
 		rotation:   0,
 		position:   pos,
 		direction:  direction,
 		color:      color,
-		gravity:    gravity,
 		radius:     radius,
 		move_speed: move_speed,
 	}
 }
 
-func (self Player) GetPosition() Position {
+func (self Enemy) GetPosition() Position {
 	return self.position
 }
 
-func (self *Player) Update() {
+func (self *Enemy) Update() {
 	if self.direction.East {
 		self.velocity_x += self.move_speed
 	} else if self.direction.West {
@@ -55,7 +53,7 @@ func (self *Player) Update() {
 	self.position.Y += self.velocity_y
 
 	//Then apply gravity to the velocity, this is done after to ensure initial jump surge is not affected untill next frame
-	self.velocity_y += self.gravity
+	// self.velocity_y += self.gravity
 
 	//Updated constant to be 3.14 (pi) so it rotates exactly as the ball does, could be changed slightly
 	self.rotation += 3.1415 * (-self.velocity_x)
@@ -67,12 +65,12 @@ func (self *Player) Update() {
 
 }
 
-func (self Player) Draw() {
+func (self Enemy) Draw() {
 	gl.PushMatrix()
 
 	gl.Color4f(self.color.Red, self.color.Green, self.color.Blue, self.color.A)
 
-	//Draw Player
+	//Draw Enemy
 	gl.PushMatrix()
 	rot := self.rotation
 	pos_x := self.position.X
@@ -84,6 +82,7 @@ func (self Player) Draw() {
 	gl.PopMatrix()
 
 	collision_points := self.GetCollision()
+
 	gl.PushMatrix()
 	gl.Begin(gl.LINES)
 	gl.Color3f(.8, .8, .8)
@@ -98,13 +97,12 @@ func (self Player) Draw() {
 
 	gl.Vertex3f(collision_points.Start.X, collision_points.Start.Y, 0)
 	gl.End()
-	gl.PopMatrix()
 
 	//Second Pop
 	gl.PopMatrix()
 }
 
-func (self Player) GetCollision() Collision {
+func (self Enemy) GetCollision() Collision {
 	length := self.radius
 	return Collision{
 		Start: self.position.Subtract(length, length),
@@ -112,19 +110,22 @@ func (self Player) GetCollision() Collision {
 	}
 }
 
-func (self *Player) StopMoving() {
+func (self *Enemy) StopMoving() {
 	self.direction.Reset()
 }
 
-func (self *Player) Jump() {
-	self.velocity_y = 50
-	// self.direction.MoveNorth()
+func (self *Enemy) MoveUp() {
+	self.direction.MoveNorth()
 }
 
-func (self *Player) MoveRight() {
+func (self *Enemy) MoveDown() {
+	self.direction.MoveSouth()
+}
+
+func (self *Enemy) MoveRight() {
 	self.direction.MoveEast()
 }
 
-func (self *Player) MoveLeft() {
+func (self *Enemy) MoveLeft() {
 	self.direction.MoveWest()
 }
